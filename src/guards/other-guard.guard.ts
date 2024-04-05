@@ -1,19 +1,17 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import * as assert from 'assert';
-import { ClsServiceManager } from 'nestjs-cls';
-import { Observable } from 'rxjs';
+import { AsyncLocalStorage } from 'async_hooks';
 
 @Injectable()
 export class OtherGuard implements CanActivate {
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
-    const cls = ClsServiceManager.getClsService();
-    // logic
-    console.log('isActive', cls.isActive());
-    console.log('someProperty', cls.get('someProperty'));
+  constructor(private asl: AsyncLocalStorage<unknown>) {}
 
-    assert(cls.isActive(), 'Context is not active');
+  async canActivate(context: ExecutionContext) {
+    assert(!!this.asl.getStore(), 'Context is not active');
+
+    // comment this line
+    this.asl.disable();
+
     return true;
   }
 }
